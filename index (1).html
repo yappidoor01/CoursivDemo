@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coursiv — Apply it now (prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --indigo:#5b4fe8; --indigo-d:#4a3ad6; --indigo-l:#eeedfe; --indigo-l2:#f4f2fe;
+    --green:#3aaf4f; --green-bright:#58c95a; --green-l:#e7f7ec;
+    --claude:#d97757; --you:#f5a623;
+    --ink:#1c1c28; --mut:#8a8a9e; --mut2:#6e6e80; --line:#ececf1; --bg:#ffffff; --bg2:#f6f6f9;
+    --f:'Plus Jakarta Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:var(--f);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    background:radial-gradient(900px 600px at 80% -10%,#e9e7fb,transparent 60%),#15131f;padding:24px 16px;color:var(--ink)}
+  .phone{width:390px;height:812px;max-height:90vh;background:var(--bg);border-radius:42px;border:10px solid #000;
+    box-shadow:0 32px 80px rgba(0,0,0,.55);position:relative;overflow:hidden;display:flex;flex-direction:column}
+  .status{display:flex;justify-content:space-between;align-items:center;padding:14px 22px 2px;font-size:13px;font-weight:700;flex:none}
+  .status .r{display:flex;gap:6px;align-items:center;font-size:12px}
+  .scroll{flex:1;overflow-y:auto;scrollbar-width:none;position:relative}
+  .scroll::-webkit-scrollbar{display:none}
+  .screen{display:none;flex-direction:column;min-height:100%;animation:fade .3s ease}
+  .screen.active{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .pad{padding:0 20px}
+
+  /* top bars */
+  .topbar{display:flex;align-items:center;gap:12px;padding:10px 18px 8px;flex:none}
+  .icbtn{width:34px;height:34px;border:none;background:none;font-size:22px;cursor:pointer;color:var(--ink);display:grid;place-items:center}
+  .wordmark{font-family:'Pacifico',cursive;color:var(--indigo);font-size:26px;line-height:1}
+  .token{margin-left:auto;display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);padding:5px 12px;border-radius:20px;font-weight:800;font-size:14px}
+  .drop{width:15px;height:15px;background:#b9c0cc;border-radius:50% 50% 50% 0;transform:rotate(45deg);display:inline-block}
+  .pct-badge{margin-left:auto;background:var(--indigo-l);color:var(--indigo);font-weight:800;font-size:13px;padding:6px 12px;border-radius:14px;display:flex;align-items:center;gap:5px}
+  .progresswrap{flex:1;height:8px;background:var(--line);border-radius:6px;overflow:hidden}
+  .progresswrap>i{display:block;height:100%;background:var(--indigo);border-radius:6px}
+
+  h1.big{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15}
+  .muted{color:var(--mut2)}
+
+  /* HOME */
+  .streakline{font-size:15px;margin:14px 20px 12px}
+  .days{display:flex;gap:8px;padding:0 20px 16px;overflow-x:auto}
+  .day{flex:none;width:44px;text-align:center}
+  .day .ring{width:44px;height:44px;border-radius:50%;background:var(--bg2);display:grid;place-items:center;font-weight:700;font-size:12px;color:var(--mut)}
+  .day.active .ring{background:#fff;border:2px solid var(--indigo);color:var(--indigo)}
+  .day.done .ring{background:var(--indigo);color:#fff}
+  .hr{height:1px;background:var(--line);margin:0 0 16px}
+  .card{margin:0 20px 16px;border:1px solid var(--line);border-radius:20px;padding:18px;background:#fff;box-shadow:0 6px 18px rgba(20,20,40,.04)}
+  .courserow{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+  .cicon{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#ffd24d,#ffb938);display:grid;place-items:center;font-size:26px;flex:none}
+  .courserow h3{font-size:19px;font-weight:800}
+  .courserow p{color:var(--mut2);font-size:14px}
+  .barrow{display:flex;align-items:center;gap:10px;margin:4px 0 6px}
+  .meta{display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:var(--mut2);margin-bottom:14px}
+  .meta .p{color:var(--indigo)}
+  .btn{display:block;width:100%;border:none;cursor:pointer;font-family:var(--f);font-weight:800;font-size:16px;padding:16px;border-radius:16px;background:var(--indigo);color:#fff;transition:.12s}
+  .btn:active{transform:scale(.985)}
+  .btn.green{background:var(--green-l);color:var(--green)}
+  .btn.ghost{background:var(--bg2);color:var(--ink)}
+  .btn[disabled]{background:#e4e4ec;color:#a6a6b4;cursor:not-allowed}
+  .cert{margin:0 20px 16px;background:var(--indigo-l);border-radius:20px;padding:16px 18px}
+  .cert .h{display:flex;justify-content:space-between;align-items:center}
+  .cert h4{font-size:16px;font-weight:800}
+  .cert .frac{color:var(--indigo);font-weight:800}
+  .cert p{color:var(--mut2);font-size:12.5px;margin:2px 0 12px}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tool{flex:1;text-align:center}
+  .tool .t{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:20px;margin:0 auto 4px;color:#fff}
+  .tool small{font-size:11px;font-weight:700;color:var(--mut)}
+  .claim{flex:none;width:62px;background:var(--indigo);border-radius:13px;padding:8px 0;text-align:center;color:#fff}
+  .claim .t{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.22);display:grid;place-items:center;margin:0 auto 3px;font-size:15px}
+  .claim small{font-size:11px;font-weight:800}
+  .lbd{margin:0 20px 18px;border-radius:20px;padding:18px;background:linear-gradient(120deg,#efeefe,#e3e0fb);display:flex;align-items:center;gap:10px;position:relative;overflow:hidden}
+  .lbd h4{font-size:17px;font-weight:800}
+  .lbd p{font-size:13px;color:var(--mut2)}
+  .lbd .play{margin-left:auto;background:var(--indigo);color:#fff;font-weight:800;font-size:14px;padding:11px 18px;border-radius:13px;border:none}
+  .nav{display:flex;border-top:1px solid var(--line);background:#fff;flex:none}
+  .nav a{flex:1;text-align:center;padding:10px 0 8px;font-size:11px;font-weight:700;color:var(--mut);cursor:pointer}
+  .nav a .ic{display:block;font-size:20px;margin-bottom:2px}
+  .nav a.on{color:var(--indigo)}
+
+  /* PATH */
+  .unit{margin:14px 20px 6px;border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;gap:12px;align-items:center}
+  .unit .cicon{width:46px;height:46px;font-size:22px;border-radius:12px}
+  .unit .k{font-size:12px;font-weight:800;color:var(--indigo);letter-spacing:.4px}
+  .unit h3{font-size:16px;font-weight:800}
+  .pathwrap{position:relative;width:340px;margin:8px auto 30px;height:730px}
+  .pathwrap svg{position:absolute;inset:0}
+  .node{position:absolute;width:72px;cursor:pointer}
+  .node .sq{width:72px;height:72px;border-radius:20px;display:grid;place-items:center;font-size:34px;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.08)}
+  .node .lab{text-align:center;font-size:13px;font-weight:700;margin-top:8px;color:var(--ink);width:96px;margin-left:-12px}
+  .node.done .sq{background:linear-gradient(135deg,#6fd96f,#46bf4c)}
+  .node.cur .sq{background:linear-gradient(135deg,#6c5cf5,var(--indigo));box-shadow:0 6px 0 var(--indigo-d)}
+  .node.lock .sq{background:var(--bg2);color:#c3c3d6;box-shadow:0 6px 0 #ececf1}
+  .startbubble{position:absolute;top:-28px;left:50%;transform:translateX(-50%);background:#fff;border-radius:10px;padding:4px 12px;font-weight:800;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+  .startbubble:after{content:"";position:absolute;bottom:-5px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:#fff}
+
+  /* LESSON intro */
+  .lessonbody{padding:6px 22px 20px}
+  .lessonbody h1{font-size:28px;font-weight:800;margin:6px 0 14px;letter-spacing:-.5px}
+  .lessonbody p{font-size:17px;line-height:1.55;color:#2a2a38}
+  .illus{width:170px;height:170px;margin:32px auto;border-radius:24px;background:var(--indigo-l2);display:grid;place-items:center;font-size:74px}
+  .footbtn{position:relative;padding:14px 20px 20px;border-top:1px solid var(--line);background:#fff;flex:none}
+
+  /* practice */
+  .pq-h{padding:8px 22px 0}
+  .pq-h h2{font-size:22px;font-weight:800;margin-bottom:6px}
+  .pq-h p{color:var(--mut2);font-size:14.5px}
+  .claudebar{display:flex;align-items:center;gap:10px;background:var(--bg2);padding:12px 22px;margin-top:14px;font-weight:800;font-size:15px}
+  .casterisk{width:26px;height:26px;border-radius:50%;background:#f7e9e2;display:grid;place-items:center;color:var(--claude);font-size:17px}
+  .prompt{padding:22px;font-size:19px;line-height:2.1;color:var(--ink)}
+  .blank{display:inline-block;border-radius:7px;padding:2px 9px;font-weight:700;cursor:pointer;transition:.12s}
+  .blank.empty{background:#f0f0f5;color:#a3a3b4}
+  .blank.empty.act{background:#efecfe;color:var(--indigo);box-shadow:inset 0 -2px 0 var(--indigo)}
+  .blank.filled{background:#efecfe;color:var(--indigo)}
+  .bank{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:10px 22px}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 16px;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 2px 6px rgba(20,20,40,.05);transition:.12s}
+  .chip:active{transform:scale(.96)}
+  .chip.used{opacity:0;pointer-events:none}
+  .checkrow{display:flex;gap:10px;padding:12px 22px 20px;border-top:1px solid var(--line);background:#fff;flex:none}
+  .checkrow .btn{flex:1}
+  .key{width:60px;border:1px solid var(--line);border-radius:14px;background:#fff;font-size:20px;cursor:pointer}
+  .shake{animation:shk .4s}
+  @keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+
+  /* success / output bubbles */
+  .bubbles{padding:6px 22px}
+  .yourow{display:flex;gap:10px;padding:14px 0;border-top:1px solid var(--line)}
+  .avatar{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:14px;color:#fff;flex:none;margin-top:2px}
+  .yourow b{font-size:14px}
+  .yourow p{font-size:14.5px;color:#2a2a38;line-height:1.5;margin-top:2px}
+  .resultbar{border-top:2px solid var(--green-bright);background:var(--green-l);padding:14px 22px;flex:none}
+  .resultbar .ok{display:flex;align-items:center;gap:10px}
+  .resultbar .okc{width:26px;height:26px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:15px}
+  .resultbar h4{font-size:18px;font-weight:800;color:var(--ink)}
+  .resultbar small{color:var(--mut2);font-size:13px;display:block;margin:2px 0 0 36px}
+
+  /* APPLY */
+  .applyhero{background:linear-gradient(135deg,#5b4fe8,#7d6bff);color:#fff;border-radius:20px;margin:14px 20px;padding:18px;position:relative;overflow:hidden}
+  .applyhero .eyebrow{font-size:11px;font-weight:800;letter-spacing:1px;color:#d9d2ff}
+  .applyhero h3{font-size:21px;font-weight:800;margin:5px 0 6px}
+  .applyhero p{font-size:14px;color:#e7e3ff;line-height:1.5}
+  .field{margin:8px 20px}
+  .field label{font-size:13px;font-weight:800;color:var(--mut2);display:block;margin-bottom:8px}
+  .field textarea{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:14px;font-family:var(--f);font-size:15px;resize:none;height:92px;color:var(--ink)}
+  .field textarea:focus{outline:none;border-color:var(--indigo)}
+  .suggest{display:flex;flex-wrap:wrap;gap:8px;margin:10px 20px 0}
+  .suggest .s{background:var(--indigo-l);color:var(--indigo-d);font-weight:700;font-size:12.5px;padding:8px 12px;border-radius:11px;cursor:pointer}
+  .toolcard{margin:14px 20px;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .toolcard .th{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .toolcard .th b{font-size:15px}
+  .toolcard .th .dot{width:7px;height:7px;border-radius:50%;background:var(--green);margin-left:auto}
+  .toolcard .th .dot+small{font-size:12px;color:var(--mut);font-weight:700}
+  .promptbox{padding:16px;font-size:16px;line-height:1.7;background:var(--bg2)}
+  .promptbox .hl{background:#efecfe;color:var(--indigo);font-weight:700;border-radius:6px;padding:1px 6px}
+  .freepill{display:inline-flex;align-items:center;gap:6px;background:var(--green-l);color:var(--green);font-weight:800;font-size:12px;padding:6px 12px;border-radius:20px}
+  .gen{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:60px 22px;text-align:center}
+  .spin{width:46px;height:46px;border-radius:50%;border:4px solid var(--indigo-l);border-top-color:var(--indigo);animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .outwrap{padding:16px 22px}
+  .outhead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .output{border:1px solid var(--line);border-radius:16px;padding:16px;font-size:14.5px;line-height:1.6;white-space:pre-wrap;color:#23232f;box-shadow:0 8px 22px rgba(91,79,232,.07)}
+  .actions{display:flex;gap:10px;margin:14px 0}
+  .act{flex:1;border:1px solid var(--line);border-radius:13px;background:#fff;padding:12px 6px;font-weight:700;font-size:12.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--ink)}
+  .act.sav{background:var(--indigo-l);border-color:var(--indigo);color:var(--indigo-d)}
+  .reward{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#fff6e9,#ffeccd);border:1px solid #ffd89a;border-radius:16px;padding:14px;margin-bottom:14px}
+  .reward .big{font-size:26px}
+  .reward b{font-size:14px;display:block}
+  .reward small{font-size:12px;color:#a06a1e}
+
+  /* RETURN celebration */
+  .celebrate{padding:50px 26px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .bigcheck{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#6fd96f,#3aaf4f);display:grid;place-items:center;color:#fff;font-size:48px;box-shadow:0 14px 30px rgba(58,175,79,.35);animation:pop .5s cubic-bezier(.2,1.5,.4,1)}
+  @keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+  .celebrate h1{font-size:26px;font-weight:800;margin-top:8px}
+  .celebrate p{color:var(--mut2);font-size:15px}
+  .statgrid{display:flex;gap:10px;width:100%;margin:18px 0}
+  .stat{flex:1;background:var(--bg2);border-radius:14px;padding:14px 8px}
+  .stat b{display:block;font-size:20px;font-weight:800;color:var(--indigo)}
+  .stat small{font-size:11px;color:var(--mut2);font-weight:700}
+
+  .banner{background:var(--green-l);color:var(--green);font-weight:800;font-size:13.5px;text-align:center;padding:11px;display:flex;align-items:center;justify-content:center;gap:8px}
+  .toast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%) translateY(70px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;font-size:13px;opacity:0;transition:.3s;z-index:60;white-space:nowrap}
+  .toast.show{transform:translateX(-50%);opacity:1}
+  .confetti{position:absolute;width:9px;height:9px;top:-14px;border-radius:2px;z-index:50;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(900px) rotate(540deg);opacity:.2}}
+  .caption{color:#cdcaf0;font-size:12.5px;text-align:center;max-width:390px;line-height:1.5}
+  .caption b{color:#fff}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="status"><span>02:51</span><span class="r">🔇 🛜 ▮▮ <b>61</b></span></div>
+  <div class="scroll" id="scroll">
+
+    <!-- ===== 1 · HOME (Courses) ===== -->
+    <section class="screen active" id="home">
+      <div class="topbar"><span class="wordmark">Coursiv</span>
+        <span class="token"><span class="drop"></span><span id="tkHome">0</span></span></div>
+      <div class="streakline" id="streakline">Finish <b>1 lesson</b> to begin your streak</div>
+      <div class="days" id="days">
+        <div class="day active" data-d="FRI"><div class="ring">FRI</div></div>
+        <div class="day"><div class="ring">SAT</div></div><div class="day"><div class="ring">SUN</div></div>
+        <div class="day"><div class="ring">MON</div></div><div class="day"><div class="ring">TUE</div></div>
+        <div class="day"><div class="ring">WED</div></div><div class="day"><div class="ring">THU</div></div>
+      </div>
+      <div class="hr"></div>
+      <div class="pad"><h1 class="big">Pick up where you left off</h1></div>
+      <div class="card" style="margin-top:14px">
+        <div class="courserow"><div class="cicon">✳️</div><div><h3>Claude</h3><p>Output Formatting</p></div></div>
+        <div class="barrow"><div class="progresswrap"><i id="barHome" style="width:18%"></i></div></div>
+        <div class="meta"><span id="lessHome">4/22 lessons completed</span><span class="p" id="pctHome">18%</span></div>
+        <button class="btn" onclick="go('path')">Continue learning</button>
+      </div>
+      <div class="cert">
+        <div class="h"><h4>Your AI Certificate Program</h4><span class="frac">0/5</span></div>
+        <p>Complete 5 courses to earn your professional certificate</p>
+        <div class="tools">
+          <div class="tool"><div class="t" style="background:#10a37f">⌬</div><small>0%</small></div>
+          <div class="tool"><div class="t" style="background:#e8836b" id="claudeTool">✳</div><small id="claudeToolPct">18%</small></div>
+          <div class="tool"><div class="t" style="background:#e0533a">j</div><small>0%</small></div>
+          <div class="tool"><div class="t" style="background:#dfe0ea;color:#9a9ab0">⛵</div><small>0%</small></div>
+          <div class="tool"><div class="t" style="background:#7a8499">◑</div><small>0%</small></div>
+          <div class="claim"><div class="t">🔒</div><small>Claim</small></div>
+        </div>
+      </div>
+      <div class="lbd"><div><h4>Learn by Doing</h4><p>Quick AI mini games.<br>Real knowledge.</p></div>
+        <button class="play" onclick="toast('Mini-games — outside this demo')">Play now</button></div>
+      <div class="nav">
+        <a class="on"><span class="ic">🗨️</span>Courses</a>
+        <a onclick="toast('Your created outputs live here')"><span class="ic">✦</span>AI Tools</a>
+        <a onclick="toast('Profile — outside this demo')"><span class="ic">👤</span>Profile</a>
+      </div>
+    </section>
+
+    <!-- ===== 2 · LEARNING PATH ===== -->
+    <section class="screen" id="path">
+      <div class="topbar"><button class="icbtn" onclick="go('home')">←</button>
+        <b style="font-size:17px">Claude ▾</b><span class="pct-badge"><span>✦</span><span id="pctPath">18 %</span></span></div>
+      <div id="pathBanner"></div>
+      <div class="unit"><div class="cicon">✳️</div><div><div class="k">UNIT 1</div><h3>Basic Prompt Engineering</h3></div></div>
+      <div class="pathwrap">
+        <svg viewBox="0 0 340 730" id="pathsvg">
+          <path id="segGreen" fill="none" stroke="#54c45a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"
+            d="M90 76 V131 H250 V186 M250 186 V241 H90 V296 M90 296 V351 H250 V406 M250 406 V461 H90 V516"/>
+          <path id="segGray" fill="none" stroke="#dcdce6" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"
+            d="M90 516 V571 H250 V626"/>
+        </svg>
+        <div class="node done" style="left:54px;top:40px"><div class="sq">✓</div><div class="lab">What is a Prompt?</div></div>
+        <div class="node done" style="left:214px;top:150px"><div class="sq">✓</div><div class="lab">Prompt Construction</div></div>
+        <div class="node done" style="left:54px;top:260px"><div class="sq">✓</div><div class="lab">Context Setting</div></div>
+        <div class="node done" style="left:214px;top:370px"><div class="sq">✓</div><div class="lab">Task Framing</div></div>
+        <div class="node cur" id="nodeOF" style="left:54px;top:480px" onclick="go('intro')">
+          <div class="startbubble" id="ofBubble">Start</div><div class="sq">💬</div><div class="lab">Output Formatting</div></div>
+        <div class="node lock" id="nodeRef" style="left:214px;top:590px"><div class="sq">📖</div><div class="lab">Refinement</div></div>
+      </div>
+    </section>
+
+    <!-- ===== 3 · LESSON INTRO ===== -->
+    <section class="screen" id="intro">
+      <div class="topbar"><button class="icbtn" onclick="go('path')">←</button>
+        <div class="progresswrap"><i style="width:8%"></i></div><span style="font-weight:800">Aa</span><button class="icbtn">🔊</button></div>
+      <div class="lessonbody" style="flex:1">
+        <h1>Tailoring AI Responses</h1>
+        <p>Today, we're diving into output formatting. Specifying the format of the AI's output is like choosing the right container for your food. It helps organize the information. Ready to make your AI outputs more useful than ever?</p>
+        <div class="illus">🧩</div>
+      </div>
+      <div class="footbtn"><button class="btn" onclick="go('practice')">Continue</button></div>
+    </section>
+
+    <!-- ===== 4 · PRACTICE (fill in the blank) ===== -->
+    <section class="screen" id="practice">
+      <div class="topbar"><button class="icbtn" onclick="go('intro')">✕</button></div>
+      <div class="pq-h"><h2>Identifying Format Specifications</h2>
+        <p>Fill in the gap to identify the format specification in this prompt.</p></div>
+      <div class="claudebar"><span class="casterisk">✳</span>Claude</div>
+      <div class="prompt" id="promptArea">
+        <span class="blank empty act" data-i="0" data-ans="Provide" onclick="clearBlank(0)">[Action verb]</span>
+        <span class="blank empty" data-i="1" data-ans="a summary" onclick="clearBlank(1)">[specific deliverable]</span>
+        of the key features of smartphones released in 2023 in
+        <span class="blank empty" data-i="2" data-ans="bullet point" onclick="clearBlank(2)">[format specification]</span>
+        format.
+      </div>
+      <div style="flex:1"></div>
+      <div class="bank" id="bank">
+        <button class="chip" data-w="Provide" onclick="placeChip(this)">Provide</button>
+        <button class="chip" data-w="bullet point" onclick="placeChip(this)">bullet point</button>
+        <button class="chip" data-w="a summary" onclick="placeChip(this)">a summary</button>
+      </div>
+      <div class="checkrow">
+        <button class="btn" id="checkBtn" disabled onclick="checkAnswer()">Check</button>
+        <button class="key" onclick="backspace()">⌫</button>
+      </div>
+    </section>
+
+    <!-- ===== 5 · SUCCESS (image 6) + APPLY CTA ===== -->
+    <section class="screen" id="success">
+      <div class="topbar"><button class="icbtn" onclick="go('path')">✕</button></div>
+      <div class="pq-h"><h2>Identifying Format Specifications</h2>
+        <p>Fill in the gap to identify the format specification in this prompt.</p></div>
+      <div class="claudebar"><span class="casterisk">✳</span>Claude</div>
+      <div class="bubbles">
+        <div class="yourow"><span class="avatar" style="background:var(--you)">🙂</span>
+          <div><b>You</b><p>Provide a summary of the key features of smartphones released in 2023 in bullet point format.</p></div></div>
+      </div>
+      <div class="pad" style="margin-top:6px">
+        <div class="applyhero">
+          <div class="eyebrow">⚡ APPLY IT NOW</div>
+          <h3>That was our example. Now make a real one.</h3>
+          <p>You nailed the format. Run this exact prompt on <b>your own</b> work and watch Claude actually do it — live.</p>
+        </div>
+      </div>
+      <div style="flex:1"></div>
+      <div class="resultbar">
+        <div class="ok"><span class="okc">✓</span><h4>Amazing!</h4></div>
+        <small>You're right on track with your approach</small>
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="btn ghost" style="flex:.8" onclick="finishPlain()">Continue</button>
+          <button class="btn" style="flex:1.2" onclick="go('applyInput')">⚡ Apply it now</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 6 · APPLY — your context ===== -->
+    <section class="screen" id="applyInput">
+      <div class="topbar"><button class="icbtn" onclick="go('success')">←</button>
+        <b style="font-size:16px">Apply it now</b>
+        <span class="token"><span class="drop"></span><span id="tkApply">0</span></span></div>
+      <div class="applyhero" style="margin-top:6px">
+        <div class="eyebrow">STEP 1 · MAKE IT YOURS</div>
+        <h3>Same prompt — your topic</h3>
+        <p>You just learned: <i>“Provide a summary of … in bullet point format.”</i> What do <b>you</b> need summarised?</p>
+      </div>
+      <div class="field"><label>I want a bullet-point summary of…</label>
+        <textarea id="topicInput" placeholder="e.g. the key benefits of my product for next week's sales call"></textarea></div>
+      <div class="suggest">
+        <span class="s" onclick="fillTopic(this)">the main points of a 12-page report I have to present</span>
+        <span class="s" onclick="fillTopic(this)">the benefits of my side-hustle service for new clients</span>
+        <span class="s" onclick="fillTopic(this)">this week's team updates for a status email</span>
+      </div>
+      <div style="flex:1"></div>
+      <div class="footbtn"><button class="btn" id="buildBtn" onclick="buildPrompt()">Build my prompt →</button></div>
+    </section>
+
+    <!-- ===== 7 · APPLY — real Tool ===== -->
+    <section class="screen" id="applyTool">
+      <div class="topbar"><button class="icbtn" onclick="go('applyInput')">←</button>
+        <b style="font-size:16px">Claude · AI Tool</b>
+        <span class="token"><span class="drop"></span><span id="tkTool">0</span></span></div>
+      <div class="pad" style="margin-top:6px"><div class="freepill">🎁 First real run — free</div></div>
+      <div class="toolcard">
+        <div class="th"><span class="casterisk">✳</span><b>Claude</b><span class="dot"></span><small>the prompt you just learned</small></div>
+        <div class="promptbox" id="liveromptBox"></div>
+      </div>
+      <div style="flex:1"></div>
+      <div class="footbtn"><button class="btn" onclick="generate()">✨ Generate with Claude</button></div>
+    </section>
+
+    <!-- ===== 8 · APPLY — live output ===== -->
+    <section class="screen" id="applyOutput">
+      <div class="topbar"><button class="icbtn" onclick="go('applyTool')">←</button>
+        <b style="font-size:16px">Claude · AI Tool</b>
+        <span class="token"><span class="drop"></span><span id="tkOut">0</span></span></div>
+      <div id="genState" class="gen"><div class="spin"></div><p class="muted" id="genMsg">Claude is working on your request…</p></div>
+      <div id="outState" style="display:none">
+        <div class="outwrap">
+          <div class="outhead"><span class="casterisk">✳</span><b>Claude</b></div>
+          <div class="output" id="outBody"></div>
+          <div class="actions">
+            <div class="act" onclick="toast('Copied to clipboard')">📋<span>Copy</span></div>
+            <div class="act" id="saveBtn" onclick="saveOut()">💾<span>Save</span></div>
+            <div class="act" onclick="go('applyInput')">🔁<span>Remix</span></div>
+          </div>
+          <div class="reward"><span class="big">🪙</span><div><b>+15 tokens earned</b><small>Your first real AI creation — nice work!</small></div></div>
+          <button class="btn" onclick="completeLesson()">Done · finish lesson</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 9 · SUCCESSFUL RETURN ===== -->
+    <section class="screen" id="returned">
+      <div class="celebrate">
+        <div class="bigcheck">✓</div>
+        <h1>Output Formatting complete!</h1>
+        <p>You didn't just learn it — you used it on your own work.</p>
+        <div class="statgrid">
+          <div class="stat"><b>🔥 1</b><small>day streak started</small></div>
+          <div class="stat"><b>+15</b><small>tokens</small></div>
+          <div class="stat"><b>1</b><small>real creation</small></div>
+        </div>
+        <button class="btn" onclick="go('path')">Back to my path →</button>
+        <button class="btn ghost" style="margin-top:10px" onclick="go('home')">Go home</button>
+      </div>
+    </section>
+
+  </div>
+  <div class="toast" id="toast">Saved</div>
+</div>
+<div class="caption"><b>Coursiv prototype — “Apply it now”.</b> Continue learning → finish the Output Formatting practice → tap <b>Apply it now</b> to run the same prompt on your own work, then return to your path. (Live output is simulated for the demo.)</div>
+
+<script>
+  const state={tokens:0,filled:[null,null,null],topic:'',saved:false};
+  const correct=["Provide","a summary","bullet point"];
+
+  function go(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.getElementById('scroll').scrollTop=0;
+    syncTokens();
+  }
+  function syncTokens(){ ['tkHome','tkApply','tkTool','tkOut'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=state.tokens;}); }
+  function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(window._t);window._t=setTimeout(()=>t.classList.remove('show'),1700);}
+
+  /* ---- practice ---- */
+  function activeBlank(){ for(let i=0;i<3;i++) if(state.filled[i]===null) return i; return -1; }
+  function refreshBlanks(){
+    const a=activeBlank();
+    document.querySelectorAll('#promptArea .blank').forEach(b=>{
+      const i=+b.dataset.i;
+      if(state.filled[i]!==null){ b.className='blank filled'; b.textContent=state.filled[i]; }
+      else { b.className='blank empty'+(i===a?' act':''); b.textContent='['+({0:'Action verb',1:'specific deliverable',2:'format specification'}[i])+']'; }
+    });
+    document.getElementById('checkBtn').disabled = activeBlank()!==-1;
+  }
+  function placeChip(el){
+    const i=activeBlank(); if(i<0) return;
+    state.filled[i]=el.dataset.w; el.classList.add('used'); refreshBlanks();
+  }
+  function clearBlank(i){
+    if(state.filled[i]===null) return;
+    const w=state.filled[i]; state.filled[i]=null;
+    document.querySelectorAll('#bank .chip').forEach(c=>{ if(c.dataset.w===w) c.classList.remove('used'); });
+    refreshBlanks();
+  }
+  function backspace(){ for(let i=2;i>=0;i--){ if(state.filled[i]!==null){ clearBlank(i); return; } } }
+  function checkAnswer(){
+    if(state.filled.join('|')===correct.join('|')){ go('success'); }
+    else { const p=document.getElementById('promptArea'); p.classList.add('shake'); setTimeout(()=>p.classList.remove('shake'),420);
+      toast('Not quite — read it back to yourself'); }
+  }
+
+  /* ---- apply ---- */
+  function fillTopic(el){ document.getElementById('topicInput').value=el.textContent; }
+  function buildPrompt(){
+    let v=document.getElementById('topicInput').value.trim();
+    if(!v){ v="the key benefits of my product for next week's sales call"; document.getElementById('topicInput').value=v; }
+    state.topic=v;
+    document.getElementById('liveromptBox').innerHTML=
+      '<span class="hl">Provide</span> <span class="hl">a summary</span> of <b>'+esc(v)+'</b> in <span class="hl">bullet point</span> format.';
+    go('applyTool');
+  }
+  function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+  function generate(){
+    go('applyOutput');
+    document.getElementById('genState').style.display='flex';
+    document.getElementById('outState').style.display='none';
+    const msgs=['Claude is reading your request…','Pulling out the key points…','Formatting as clean bullets…'];
+    let i=0; const m=document.getElementById('genMsg'); m.textContent=msgs[0];
+    const t=setInterval(()=>{i++; if(i<msgs.length) m.textContent=msgs[i];},700);
+    setTimeout(()=>{ clearInterval(t); showOutput(); },2200);
+  }
+  function showOutput(){
+    const topic=state.topic;
+    const text=
+`Here's ${topic}, summarised in bullet points:
+
+•  Overview — one line that frames ${topic} so a busy reader gets it instantly.
+•  Biggest win first — lead with the single strongest point, not the longest one.
+•  Make it concrete — pair each point with a number, example or result.
+•  Keep it scannable — short bullets, one idea each, no walls of text.
+•  Close with the ask — end by telling the reader exactly what to do next.
+
+Want me to tighten this to 3 bullets, or rewrite it for a specific audience?`;
+    document.getElementById('genState').style.display='none';
+    document.getElementById('outState').style.display='block';
+    const box=document.getElementById('outBody'); box.textContent='';
+    let j=0; (function type(){ if(j<=text.length){ box.textContent=text.slice(0,j); j+=4; requestAnimationFrame(type);} })();
+    if(!state.rewarded){ state.tokens+=15; state.rewarded=true; syncTokens(); }
+  }
+  function saveOut(){ const b=document.getElementById('saveBtn'); b.classList.add('sav'); b.innerHTML='✅<span>Saved</span>'; toast('Saved to My Creations'); }
+
+  /* ---- completion & return ---- */
+  function markComplete(){
+    // path node -> done
+    const of=document.getElementById('nodeOF');
+    of.className='node done'; of.querySelector('.sq').textContent='✓';
+    const bub=document.getElementById('ofBubble'); if(bub) bub.remove();
+    of.setAttribute('onclick','');
+    // unlock refinement -> current
+    const rf=document.getElementById('nodeRef');
+    rf.className='node cur'; rf.querySelector('.sq').textContent='💬';
+    if(!rf.querySelector('.startbubble')){ const sb=document.createElement('div'); sb.className='startbubble'; sb.textContent='Start'; rf.prepend(sb); }
+    // path line all green
+    document.getElementById('segGreen').setAttribute('d','M90 76 V131 H250 V186 M250 186 V241 H90 V296 M90 296 V351 H250 V406 M250 406 V461 H90 V516 M90 516 V571 H250 V626');
+    document.getElementById('segGray').setAttribute('d','');
+    document.getElementById('pctPath').textContent='22 %';
+    document.getElementById('pathBanner').innerHTML='<div class="banner">✓ Output Formatting complete · streak started 🔥</div>';
+    // home updates
+    document.getElementById('barHome').style.width='22%';
+    document.getElementById('pctHome').textContent='22%';
+    document.getElementById('lessHome').textContent='5/22 lessons completed';
+    document.getElementById('streakline').innerHTML='🔥 <b>1-day streak</b> — keep it going tomorrow';
+    document.querySelector('#days .day.active').classList.add('done');
+    document.getElementById('claudeToolPct').textContent='22%';
+  }
+  function completeLesson(){ markComplete(); confetti(); go('returned'); }
+  function finishPlain(){ // the "old" path: just continue, no real tool use
+    markComplete(); toast('Lesson complete'); go('path');
+  }
+  function confetti(){
+    const ph=document.querySelector('.phone'); const cols=['#5b4fe8','#7d6bff','#3aaf4f','#f5a623','#e8836b'];
+    for(let i=0;i<46;i++){ const d=document.createElement('div'); d.className='confetti';
+      d.style.left=Math.random()*100+'%'; d.style.background=cols[i%5];
+      d.style.animationDuration=(2+Math.random()*2)+'s'; d.style.animationDelay=(Math.random()*.4)+'s';
+      ph.appendChild(d); setTimeout(()=>d.remove(),4400); }
+  }
+  refreshBlanks();
+</script>
+</body>
+</html>
